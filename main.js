@@ -6,6 +6,7 @@ const {createReadStream} = require('fs')
 const mime = require('mime')  // 获取文件格式
 const ejs = require('ejs')  // 借助模板
 const { promisify } = require('util')
+const openUrl = require('./openUrl')
 
 // ejs.renderFile()
 
@@ -15,6 +16,7 @@ function mergeConfig(config) {
     ...config
   }
 }
+// dfs
 
 class Server{
   constructor(config) {
@@ -24,6 +26,7 @@ class Server{
     let server = http.createServer(this.serveHandle.bind(this))
     server.listen(this.config.program._optionValues.port || 1234, () => {
       console.log('服务端开始运行了')
+      openUrl(`http://localhost:${this.config.program._optionValues.port || 1234}`)
     })
   }
 
