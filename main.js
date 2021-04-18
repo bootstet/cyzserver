@@ -8,6 +8,7 @@ const ejs = require('ejs')  // 借助模板
 const { promisify } = require('util')
 const openUrl = require('./openUrl')
 
+
 // ejs.renderFile()
 
 function mergeConfig(config) {
@@ -24,14 +25,26 @@ class Server{
   }
   start() {
     let server = http.createServer(this.serveHandle.bind(this))
-    server.listen(this.config.program._optionValues.port || 1234, () => {
+    const port = this.config.program._optionValues.port || 1234
+    server.listen(port, () => {
       console.log('服务端开始运行了')
-      openUrl(`http://localhost:${this.config.program._optionValues.port || 1234}`)
+      const dirurl = this.config.program._optionValues.directory || this.config.directory
+      console.log(`Serving "${dirurl}" at http://127.0.0.1:${port}
+      Ready for changes`)
+      openUrl(`http://localhost:${port}`)
     })
+
+
+    server.on('error',function(err){
+      console.log(err)
+        if(err.code == 'EADDRINUSE'){
+            // resolve(err);
+        }
+    }); 
   }
 
   async serveHandle(req, res) {
-    console.log('有请求启动了。。。')
+    // console.log('有请求启动了。。。')
     // 路径拼接  拼接启动参数里的路径
     const dirurl = this.config.program._optionValues.directory || this.config.directory
     let { pathname } = url.parse(req.url)
@@ -89,3 +102,41 @@ class Server{
 }
 
 module.exports = Server
+
+// const net = require('net');
+ 
+// function portInUse(port){
+//     return new Promise((resolve, reject)=>{
+//         let server = net.createServer().listen(port);
+//         server.on('listening',function(){
+//             server.close();
+//             resolve(port);
+//         });
+//         server.on('error',function(err){
+//             if(err.code == 'EADDRINUSE'){
+//                 resolve(err);
+//             }
+//         });             
+//     });
+// }
+ 
+// const tryUsePort = async function(port, portAvailableCallback){
+//     let res = await portInUse(port);
+//     if(res instanceof Error){
+//         console.log(`端口：${port}被占用\n`);
+//         port++;
+//         tryUsePort(port, portAvailableCallback);
+//     }else{
+//         portAvailableCallback(port);
+//     }
+// }
+
+
+
+// // 测试 
+// let port=8022;
+// tryUsePort(port ,function(port){
+//     // do something ...
+//     console.log(`端口：${port}可用\n`);
+//     // net.createServer().listen(port);
+// });
